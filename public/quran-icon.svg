@@ -1,0 +1,22 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" rx="40" fill="#1f6b52"/>
+  <g transform="translate(90 92)">
+    <!-- open mushaf -->
+    <path d="M-52 38 C-52 10 -28 -18 0 -28 C28 -18 52 10 52 38 L52 44 C52 48 48 52 44 52 L-44 52 C-48 52 -52 48 -52 44 Z" fill="#f5f3ea"/>
+    <path d="M0 -28 L0 52" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M-44 52 C-30 44 -14 40 0 40 C14 40 30 44 44 52" stroke="#c9a84c" stroke-width="2" fill="none"/>
+    <!-- page lines -->
+    <line x1="-34" y1="-6" x2="-6" y2="-10" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="-34" y1="4" x2="-10" y2="0" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="-34" y1="14" x2="-8" y2="10" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="-34" y1="24" x2="-12" y2="20" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="6" y1="-10" x2="34" y2="-6" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="10" y1="0" x2="34" y2="4" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="8" y1="10" x2="34" y2="14" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <line x1="12" y1="20" x2="34" y2="24" stroke="#1f6b52" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    <!-- bookmark -->
+    <path d="M0 -28 L-8 -8 L0 -2 L8 -8 Z" fill="#c9a84c"/>
+    <!-- decorative top arch -->
+    <path d="M-20 -36 Q0 -48 20 -36" stroke="#c9a84c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

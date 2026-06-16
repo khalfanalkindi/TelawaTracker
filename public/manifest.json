@@ -1,0 +1,26 @@
+{
+  "name": "Telawa Tracker",
+  "short_name": "Telawa",
+  "description": "Track your daily Quran recitation with streaks",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f3ea",
+  "theme_color": "#1f6b52",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/quran-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/quran-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
