@@ -5,14 +5,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { surahs, getSurahByNumber } from "@/lib/surahs"
-import {
-  getUserEntry,
-  saveUserEntry,
-  resetUserEntry,
-  hasUserRow,
-  getEffectiveStreak,
-  type TelawaEntry,
-} from "@/lib/storage"
+import { logout, resetEntry, saveEntry } from "@/lib/api"
+import type { TelawaEntry } from "@/lib/types"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import {
@@ -23,17 +17,30 @@ import {
 } from "@/components/ui/select"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ConfirmDialog } from "@/components/confirm-dialog"
-import { Check, BookOpen, CalendarDays, Flame, RotateCcw } from "lucide-react"
+import { Check, BookOpen, CalendarDays, Flame, LogOut, RotateCcw } from "lucide-react"
 
-export function TelawaTracker() {
+interface TelawaTrackerProps {
+  email: string
+  initialEntry: TelawaEntry | null
+  initialStreak: number
+  onLogout: () => void
+}
+
+export function TelawaTracker({
+  email,
+  initialEntry,
+  initialStreak,
+  onLogout,
+}: TelawaTrackerProps) {
   const [surah, setSurah] = useState<string>("")
   const [page, setPage] = useState<string>("")
   const [aya, setAya] = useState<string>("")
   const [saved, setSaved] = useState(false)
-  const [lastEntry, setLastEntry] = useState<TelawaEntry | null>(null)
-  const [streak, setStreak] = useState(0)
+  const [lastEntry, setLastEntry] = useState<TelawaEntry | null>(initialEntry)
+  const [streak, setStreak] = useState(initialStreak)
   const [today, setToday] = useState<string>("")
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const selectedSurah = getSurahByNumber(surah)
 
@@ -47,40 +54,57 @@ export function TelawaTracker() {
     }).format(now)
     setToday(formatted)
 
-    const entry = getUserEntry()
-    if (entry) {
-      setLastEntry(entry)
-      setStreak(getEffectiveStreak(entry))
-      setSurah(entry.surah)
-      setPage(entry.page)
-      setAya(entry.aya)
+    if (initialEntry) {
+      setSurah(initialEntry.surah)
+      setPage(initialEntry.page)
+      setAya(initialEntry.aya)
     }
-  }, [])
+  }, [initialEntry])
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!surah) return
+    if (!surah || saving) return
 
-    const entry = saveUserEntry({ surah, page, aya, date: today })
-    setLastEntry(entry)
-    setStreak(entry.streak)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    setSaving(true)
+    try {
+      const { entry } = await saveEntry({ surah, page, aya, date: today })
+      setLastEntry(entry)
+      setStreak(entry.streak)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch {
+      // ignore for now
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleReset = () => {
-    if (!hasUserRow() && !surah && !page && !aya) return
+    if (!lastEntry && !surah && !page && !aya) return
     setShowResetConfirm(true)
   }
 
-  const confirmReset = () => {
-    resetUserEntry()
-    setLastEntry(null)
-    setStreak(0)
-    setSurah("")
-    setPage("")
-    setAya("")
-    setShowResetConfirm(false)
+  const confirmReset = async () => {
+    try {
+      await resetEntry()
+      setLastEntry(null)
+      setStreak(0)
+      setSurah("")
+      setPage("")
+      setAya("")
+    } catch {
+      // ignore
+    } finally {
+      setShowResetConfirm(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      onLogout()
+    }
   }
 
   return (
@@ -114,6 +138,14 @@ export function TelawaTracker() {
           >
             <RotateCcw className="size-4" aria-hidden="true" />
           </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="تسجيل الخروج"
+            className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+          >
+            <LogOut className="size-4" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -133,6 +165,9 @@ export function TelawaTracker() {
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
           سجّل وردك اليومي من القرآن الكريم
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
+          {email}
         </p>
 
         {/* Date */}
@@ -159,7 +194,7 @@ export function TelawaTracker() {
           <Select value={surah} onValueChange={(value) => setSurah(value ?? "")}>
             <SelectTrigger
               id="surah"
-              className="h-12 w-full rounded-2xl border-border bg-card text-base shadow-sm data-[placeholder]:text-muted-foreground"
+              className="h-12 w-full rounded-2xl border-border bg-card text-base shadow-sm data-placeholder:text-muted-foreground"
             >
               {selectedSurah ? (
                 <span className="inline-flex items-center gap-2">
@@ -225,7 +260,7 @@ export function TelawaTracker() {
         {/* Save button */}
         <button
           type="submit"
-          disabled={!surah}
+          disabled={!surah || saving}
           className="mt-2 flex h-14 items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-base font-bold text-primary-foreground shadow-md transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saved ? (
