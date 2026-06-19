@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getUserEntry, resetUserEntry, saveUserEntry } from "@/lib/server/db"
 import { getSessionEmail } from "@/lib/server/session"
 import { getEffectiveStreak } from "@/lib/streak"
+import { getRequestTimeZone, resolveTimeZone } from "@/lib/timezone"
 
 async function requireEmail() {
   const email = await getSessionEmail()
@@ -9,16 +10,17 @@ async function requireEmail() {
   return email
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const email = await requireEmail()
   if (!email) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
+  const timeZone = getRequestTimeZone(request)
   const entry = await getUserEntry(email)
   return NextResponse.json({
     entry,
-    streak: getEffectiveStreak(entry),
+    streak: getEffectiveStreak(entry, timeZone),
   })
 }
 
@@ -33,20 +35,29 @@ export async function POST(request: Request) {
     page?: string
     aya?: string
     date?: string
+    timeZone?: string
   }
 
   if (!body.surah) {
     return NextResponse.json({ error: "السورة مطلوبة" }, { status: 400 })
   }
 
-  const entry = await saveUserEntry(email, {
-    surah: body.surah,
-    page: body.page ?? "",
-    aya: body.aya ?? "",
-    date: body.date ?? "",
-  })
+  const timeZone = resolveTimeZone(body.timeZone)
+  const entry = await saveUserEntry(
+    email,
+    {
+      surah: body.surah,
+      page: body.page ?? "",
+      aya: body.aya ?? "",
+      date: body.date ?? "",
+    },
+    timeZone,
+  )
 
-  return NextResponse.json({ entry, streak: entry.streak })
+  return NextResponse.json({
+    entry,
+    streak: getEffectiveStreak(entry, timeZone),
+  })
 }
 
 export async function DELETE() {

@@ -1,4 +1,5 @@
 import type { TelawaEntry } from "@/lib/types"
+import { getUserTimeZone, timeZoneQuery } from "@/lib/timezone"
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = (await res.json()) as T & { error?: string }
@@ -9,7 +10,7 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 export async function fetchSession() {
-  const res = await fetch("/api/auth/me", { credentials: "include" })
+  const res = await fetch(`/api/auth/me?${timeZoneQuery()}`, { credentials: "include" })
   if (res.status === 401) return null
   return parseJson<{
     authenticated: boolean
@@ -33,7 +34,7 @@ export async function verifyOtp(email: string, code: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ email, code }),
+    body: JSON.stringify({ email, code, timeZone: getUserTimeZone() }),
   })
   return parseJson<{
     email: string
@@ -51,7 +52,7 @@ export async function logout() {
 }
 
 export async function fetchEntry() {
-  const res = await fetch("/api/entry", { credentials: "include" })
+  const res = await fetch(`/api/entry?${timeZoneQuery()}`, { credentials: "include" })
   return parseJson<{ entry: TelawaEntry | null; streak: number }>(res)
 }
 
@@ -65,7 +66,7 @@ export async function saveEntry(data: {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, timeZone: getUserTimeZone() }),
   })
   return parseJson<{ entry: TelawaEntry; streak: number }>(res)
 }

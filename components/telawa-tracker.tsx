@@ -7,6 +7,7 @@ import Image from "next/image"
 import { surahs, getSurahByNumber } from "@/lib/surahs"
 import { logout, resetEntry, saveEntry } from "@/lib/api"
 import { getEffectiveStreak } from "@/lib/streak"
+import { getUserTimeZone } from "@/lib/timezone"
 import type { TelawaEntry } from "@/lib/types"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -47,11 +48,13 @@ export function TelawaTracker({
 
   useEffect(() => {
     const now = new Date()
+    const timeZone = getUserTimeZone()
     const formatted = new Intl.DateTimeFormat("ar", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone,
     }).format(now)
     setToday(formatted)
 
@@ -64,7 +67,7 @@ export function TelawaTracker({
 
   useEffect(() => {
     const refreshStreak = () => {
-      setStreak(getEffectiveStreak(lastEntry))
+      setStreak(getEffectiveStreak(lastEntry, getUserTimeZone()))
     }
 
     refreshStreak()

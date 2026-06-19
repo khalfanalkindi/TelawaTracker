@@ -1,10 +1,14 @@
 import type { TelawaEntry } from "@/lib/types"
+import { resolveTimeZone } from "@/lib/timezone"
 
-export function toDayKey(date = new Date()): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, "0")
-  const d = String(date.getDate()).padStart(2, "0")
-  return `${y}-${m}-${d}`
+export function toDayKey(date = new Date(), timeZone?: string): string {
+  const tz = resolveTimeZone(timeZone)
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date)
 }
 
 function dayDiff(from: string, to: string): number {
@@ -13,10 +17,13 @@ function dayDiff(from: string, to: string): number {
   return Math.round((b.getTime() - a.getTime()) / 86_400_000)
 }
 
-/** Shown streak: only counts if the user already read today. Resets at midnight. */
-export function getEffectiveStreak(entry: TelawaEntry | null): number {
+/** Shown streak: only counts if the user already read today (in their timezone). */
+export function getEffectiveStreak(
+  entry: TelawaEntry | null,
+  timeZone?: string,
+): number {
   if (!entry || entry.streak === 0) return 0
-  if (entry.lastRecitationDay !== toDayKey()) return 0
+  if (entry.lastRecitationDay !== toDayKey(new Date(), timeZone)) return 0
   return entry.streak
 }
 

@@ -70,13 +70,14 @@ export async function getUserEntry(email: string): Promise<TelawaEntry | null> {
 export async function saveUserEntry(
   email: string,
   data: { surah: string; page: string; aya: string; date: string },
+  timeZone: string,
 ): Promise<TelawaEntry> {
   const normalized = normalizeEmail(email)
   const db = await readDb()
   const user = db.users.find((u) => u.email === normalized)
   if (!user) throw new Error("User not found")
 
-  const today = toDayKey()
+  const today = toDayKey(new Date(), timeZone)
   const existing = user.entry
 
   const streak = computeStreak(

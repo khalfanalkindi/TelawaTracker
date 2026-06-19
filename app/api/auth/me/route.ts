@@ -3,8 +3,9 @@ import { NextResponse } from "next/server"
 import { clearSessionCookieOptions, getSessionEmail } from "@/lib/server/session"
 import { getEffectiveStreak } from "@/lib/streak"
 import { findUserByEmail } from "@/lib/server/db"
+import { getRequestTimeZone } from "@/lib/timezone"
 
-export async function GET() {
+export async function GET(request: Request) {
   const email = await getSessionEmail()
   if (!email) {
     return NextResponse.json({ authenticated: false }, { status: 401 })
@@ -15,11 +16,13 @@ export async function GET() {
     return NextResponse.json({ authenticated: false }, { status: 401 })
   }
 
+  const timeZone = getRequestTimeZone(request)
+
   return NextResponse.json({
     authenticated: true,
     email: user.email,
     entry: user.entry,
-    streak: getEffectiveStreak(user.entry),
+    streak: getEffectiveStreak(user.entry, timeZone),
   })
 }
 

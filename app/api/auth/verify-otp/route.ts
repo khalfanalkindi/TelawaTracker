@@ -4,10 +4,15 @@ import { getOrCreateUser } from "@/lib/server/db"
 import { verifyOtp } from "@/lib/server/otp"
 import { createSessionToken, sessionCookieOptions } from "@/lib/server/session"
 import { getEffectiveStreak } from "@/lib/streak"
+import { resolveTimeZone } from "@/lib/timezone"
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string; code?: string }
+    const body = (await request.json()) as {
+      email?: string
+      code?: string
+      timeZone?: string
+    }
     const email = body.email?.trim().toLowerCase()
     const code = body.code?.trim()
 
@@ -25,10 +30,11 @@ export async function POST(request: Request) {
     cookieStore.set(sessionCookieOptions(token))
 
     const entry = user.entry
+    const timeZone = resolveTimeZone(body.timeZone)
     return NextResponse.json({
       email: user.email,
       entry,
-      streak: getEffectiveStreak(entry),
+      streak: getEffectiveStreak(entry, timeZone),
     })
   } catch {
     return NextResponse.json({ error: "تعذر تسجيل الدخول" }, { status: 500 })
