@@ -13,22 +13,21 @@ function dayDiff(from: string, to: string): number {
   return Math.round((b.getTime() - a.getTime()) / 86_400_000)
 }
 
+/** Shown streak: only counts if the user already read today. Resets at midnight. */
 export function getEffectiveStreak(entry: TelawaEntry | null): number {
   if (!entry || entry.streak === 0) return 0
-  const today = toDayKey()
-  const diff = dayDiff(entry.lastRecitationDay, today)
-  if (diff <= 1) return entry.streak
-  return 0
+  if (entry.lastRecitationDay !== toDayKey()) return 0
+  return entry.streak
 }
 
 export function computeStreak(
   lastDay: string | null,
-  currentStreak: number,
+  storedStreak: number,
   today: string,
 ): number {
   if (!lastDay) return 1
   const diff = dayDiff(lastDay, today)
-  if (diff === 0) return currentStreak || 1
-  if (diff === 1) return (currentStreak || 0) + 1
+  if (diff === 0) return storedStreak || 1
+  if (diff === 1) return storedStreak + 1
   return 1
 }

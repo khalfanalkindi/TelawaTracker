@@ -1,7 +1,7 @@
 import { promises as fs } from "fs"
 import path from "path"
 import type { Database, TelawaEntry, UserRecord } from "@/lib/types"
-import { computeStreak, getEffectiveStreak, toDayKey } from "@/lib/streak"
+import { computeStreak, toDayKey } from "@/lib/streak"
 
 const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data")
 const DB_PATH = path.join(DATA_DIR, "db.json")
@@ -81,7 +81,7 @@ export async function saveUserEntry(
 
   const streak = computeStreak(
     existing?.lastRecitationDay ?? null,
-    existing ? getEffectiveStreak(existing) : 0,
+    existing?.streak ?? 0,
     today,
   )
 

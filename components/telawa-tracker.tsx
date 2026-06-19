@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { surahs, getSurahByNumber } from "@/lib/surahs"
 import { logout, resetEntry, saveEntry } from "@/lib/api"
+import { getEffectiveStreak } from "@/lib/streak"
 import type { TelawaEntry } from "@/lib/types"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -60,6 +61,16 @@ export function TelawaTracker({
       setAya(initialEntry.aya)
     }
   }, [initialEntry])
+
+  useEffect(() => {
+    const refreshStreak = () => {
+      setStreak(getEffectiveStreak(lastEntry))
+    }
+
+    refreshStreak()
+    const interval = setInterval(refreshStreak, 30_000)
+    return () => clearInterval(interval)
+  }, [lastEntry])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
